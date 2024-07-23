@@ -9,9 +9,14 @@ This project is a simple teacher registration system built using Core PHP, Boots
 - Form Validation using jQuery Validation Plugin
 - File Upload Validation (PDF, DOC, DOCX for Resume and JPG, JPEG, PNG for Image)
 - Maximum upload size: 10MB
+- datatable teacher list with ajax paginating with create, update, delete,edit  and status change 
 
 ## Installation
 
 1. Clone the repository:
    ```bash
    git clone https://github.com/abhilashjohri/teacher-php.git
+
+2. change SITE_URL , Database detail in system folder config.php file 
+
+   
