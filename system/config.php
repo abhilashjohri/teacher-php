@@ -1,6 +1,6 @@
 <?php
 $site_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']=== 'on' ? "https" : "http") ."://" . $_SERVER['HTTP_HOST'] .$_SERVER['REQUEST_URI'];
-$site_url = 'http://localhost/apswebtech/teacher-php/';
+$site_url = 'http://localhost/git/teacher-php/';
 define("SITE_URL",$site_url);
 //---database details---
 defined('DB_HOST')  OR define("DB_HOST", 'localhost');

@@ -18,7 +18,7 @@ class Database {
         }
         return $this->conn;
     }
-
+ 
     public function insert($table, $data) {
         $columns = implode(", ", array_keys($data));
         $placeholders = ":" . implode(", :", array_keys($data));

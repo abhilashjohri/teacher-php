@@ -2,10 +2,13 @@
 class Teacher {
 
     private $conn;
+    private $db;
     private  $teacher_id;
+    private $table_name = "teachers";
 
     public function __construct($db) {
-        $this->conn = $db;
+        $this->conn = $db->connect();
+        $this->db = $db;
     }
 
     public function login($email, $password) {
@@ -81,11 +84,172 @@ class Teacher {
 
     }
     public function listTeacher() {
+            $request = $_REQUEST;
+    
+            $columns = [
+                0 => 'id',
+                1 => 'name',
+                2 => 'email',
+                3 => 'resume',
+                4 => 'image'
+            ];
+    
+            $query = "SELECT * FROM " . $this->table_name;
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $totalData = $stmt->rowCount();
+            $totalFiltered = $totalData;
+    
+            $limit = $request['length'];
+            $start = $request['start'];
+            $order = $columns[$request['order'][0]['column']];
+            $dir = $request['order'][0]['dir'];
+    
+            if (!empty($request['search']['value'])) {
+                $search = $request['search']['value'];
+                $query .= " WHERE name LIKE '%$search%' OR email LIKE '%$search%'";
+            }
+    
+            $query .= " ORDER BY $order $dir LIMIT $start, $limit";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+    
+            $data = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $nestedData = [];
+                $nestedData['id'] = $row['id'];
+                $nestedData['name'] = $row['name'];
+                $nestedData['email'] = $row['email'];
+                // $nestedData['resume'] = $row['resume'];
+                // $nestedData['image'] = $row['email'];
+                $nestedData['resume'] = '<a href="../uploads/resumes/'.$row["resume"].'" target="_blank">View Resume</a>';
+                $nestedData['image'] = '<img src="../uploads/images/'.$row['image'].'" width="50" height="50">';
+                $nestedData['status'] = $row['status'];
+                $nestedData['actions'] = '
+                    <button class="btn btn-primary btn-sm edit-btn" data-id="'.$row['id'].'">Edit</button>
+                    <button class="btn btn-danger btn-sm delete-btn" data-id="'.$row['id'].'">Delete</button>
+                    <button class="btn btn-secondary btn-sm status-btn" data-id="'.$row['id'].'" data-status="'.$row['status'].'">'.($row['status'] == "Active" ? 'Deactivate' : 'Activate').'</button>
+                ';
+    
+                $data[] = $nestedData;
+            }
+    
+            $json_data = [
+                "draw" => intval($request['draw']),
+                "recordsTotal" => intval($totalData),
+                "recordsFiltered" => intval($totalFiltered),
+                "data" => $data
+            ];
+    
+            echo json_encode($json_data);
+        
+    }
+    public function saveTeacher($post, $files) {
+        
+        $error_arr = [];
+        $id = $post['id'];
+        $data =array();
+        $data['name']  = $post['name'];
+        $data['email'] =$email = $post['email'];
+
+        $checkQuery = 'SELECT * FROM teachers WHERE email = :email';
+        $checkStmt = $this->conn->prepare($checkQuery);
+        $checkStmt->bindParam(':email', $email);
+        $checkStmt->execute();
+
+        if ($checkStmt->rowCount() > 0 && $id <1) {
+            $error_arr[]= 'Email already exists. Please use a different email';
+        }
+         if($post['password']){
+            $data['password'] =  password_hash($post['password'], PASSWORD_DEFAULT);
+         }
+
+         $allowedResumeTypes = [
+            'application/pdf', 
+            'application/msword', 
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+        $allowedImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+        $maxFileSize = 10485760; // 10MB
+    
+
+    
+         if(isset($files['resume']) && $files['resume']['error'] == 0) {
+            if (!in_array($files['resume']['type'], $allowedResumeTypes)) {
+                $error_arr[] = 'Invalid resume file type. Only PDF, DOC, and DOCX are allowed.';
+
+            }elseif ($files['resume']['size'] > $maxFileSize) {
+                $error_arr[] = 'Image file size exceeds 10MB limit.';
+            }else {
+            $data['resume'] = $this->uploadFile($files['resume'], 'resumes');
+            }
+        }
+    
+        if(isset($files['image']) && $files['image']['error'] == 0) {
+
+            if (!in_array($files['image']['type'], $allowedImageTypes)) {
+                $error_arr[] = 'Invalid image file type. Only JPG, JPEG, and PNG are allowed.'; 
+            } elseif ($files['image']['size'] > $maxFileSize) {
+                    $error_arr []= 'Image file size exceeds 10MB limit.';
+                  
+            }else {
+            $data['image'] = $this->uploadFile($files['image'], 'images');
+            }
+        }
+        $condition = [ 
+            'id' => $id
+        ];
+         if(count($error_arr))   {
+            echo json_encode(['status'=>"error",'msg'=>implode(", ",$error_arr)]); 
+         }  else {
+        if ($id) {
+            // Update teacher
+            if($this->db->update($this->table_name, $data, $condition)){
+               echo json_encode(['status'=>"success",'msg'=>"update successfully"]);
+            }else {
+                echo json_encode(['status'=>"error",'msg'=>"Not updated "]); 
+            }
+        } else {
+            // Insert new teacher
+            if($this->db->insert($this->table_name, $data)){
+               echo json_encode(['status'=>"success",'msg'=>"Insert successfully"]);
+            }else {
+              echo json_encode(['status'=>"error",'msg'=>"Not insert"]);    
+            }
+        }
+    }
+    }
+ 
+    public function deleteTeacher($id) {
+        $query = "DELETE FROM " . $this->table_name . " WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$id]);
 
     }
 
-    public function profile() {
+    public function updateStatus($id) {
+        // Your logic to update the status of a teacher
+        // For example, toggling the status between active and inactive
+        $query = "UPDATE " . $this->table_name . " SET status = IF(status='active', 'inactive', 'active') WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$id]);
+    }
 
+    private function uploadFile($file, $type) {
+        $filename = uniqid('', true) . "." . pathinfo($file['name'], PATHINFO_EXTENSION);
+        $targetDir = "uploads/$type/";
+        $targetFile = $targetDir . $filename;
+        move_uploaded_file($file["tmp_name"], $targetFile);
+        return $filename;
+ 
+    }
+      
+       
+    public function getTeacher($id) {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     public function getByID($id) {
 
@@ -96,16 +260,7 @@ class Teacher {
        return $teacher = $stmt->fetch(PDO::FETCH_ASSOC);
 
     }
-    public function addteacher() {
-
-    }
-    public function updateteacher() {
-
-    }
-    public function deleteteacher() {
-
-    }
-
-
+    
+ 
 
 }

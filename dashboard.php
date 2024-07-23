@@ -5,11 +5,9 @@ checkloginSession();
 $db = new Database();
 $conn = $db->connect();
 
-$teacher = new Teacher($conn);
+$teacher = new Teacher($db);
 $teacher_id  =$_SESSION['teacher_id'];
 $teacher_data = $teacher->getByID($teacher_id);
-
-
 ?>
 
 <!DOCTYPE html>
@@ -21,7 +19,10 @@ $teacher_data = $teacher->getByID($teacher_id);
     <title>Teacher Dashboard</title>
 </head>
 <body>
+
 <div class="container mt-5">
+<?php include_once 'template/navbar.php'; ?>
+
     <h2>Teacher Dashboard</h2>
     <p>Name: <?= htmlspecialchars($teacher_data['name']) ?></p>
     <p>Email: <?= htmlspecialchars($teacher_data['email']) ?></p>

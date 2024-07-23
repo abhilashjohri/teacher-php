@@ -8,7 +8,7 @@ $action = isset($_REQUEST['action'])?$_REQUEST['action']:'';
  // teacher module 
 if( $module =='teacher'){
 	include_once 'modules/Teacher.php';
-	$teacher = new Teacher($conn);
+	$teacher = new Teacher($db);
 	switch ($action) {
 		case 'login':
 			$email = $_POST['email'];
@@ -29,21 +29,28 @@ if( $module =='teacher'){
 		  break;  
 		case 'listTeacher':
 			$teacher->listTeacher();
-		  break;
-		case 'getByID':
-			$teacher->teacher_id = $_POST["id"];
-	       echo  $teacher->getByID();
-		  break;
-		  case 'addteacher':
-			$teacher->addteacher();
 		  break; 
-		  case 'updateteacher':
-			// echo 33;
-			$teacher->updateteacher();
+		case 'getByID':
+			$id = $_POST["id"];
+	       echo  $teacher->getByID($id);
+		  break; 
+		  case 'get_teacher':
+			$id = $_POST["id"];
+		   echo json_encode($teacher->getByID($_POST['id']));
+		  break; 
+		  case 'saveTeacher':
+			$teacher->saveTeacher($_POST, $_FILES);
+		  break; 
+		  case 'update_status':
+			$teacher->updateStatus($_POST['id'], $_POST['status']);
+		  break; 
+		  case 'delete_teacher':
+			$teacher->deleteTeacher($_POST['id']);
 		  break;  
 		
 		default:
 	  }
 }
+
 
 ?>

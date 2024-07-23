@@ -36,7 +36,7 @@
             <input type="file" class="form-control" id="image" name="image" required>
         </div>
         <button type="submit" class="btn btn-primary">Register</button>
-        <a href="<?php echo  SITE_URL;?>/login.php" class="btn btn-secondary">login</a>
+        <a href="<?php echo  SITE_URL;?>index.php" class="btn btn-secondary">login</a>
         <input type="hidden"  name="module" value="teacher">
         <input type="hidden"  name="action" value="register">
     </form>

@@ -6,4 +6,13 @@
         exit();
     }
  }
+
+ function is_admin(){
+     if($_SESSION['role']=='Admin'){
+         return true;
+        }else {
+            return false;
+        }
+     }
+ 
 ?>
