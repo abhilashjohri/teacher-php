@@ -1,4 +1,4 @@
-# Teacher Registration System
+# Teacher sample Registration login System in php
 
 This project is a simple teacher registration system built using Core PHP, Bootstrap 5, and Ajax. It allows teachers to register with their resume and image, and login to access their data.
 
@@ -14,4 +14,4 @@ This project is a simple teacher registration system built using Core PHP, Boots
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/your-repository.git
+   git clone https://github.com/abhilashjohri/teacher-php.git
