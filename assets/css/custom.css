@@ -1,0 +1,9 @@
+ .error {
+            color: red;
+        }
+        .error-input {
+            border-color: red;
+        }
+        .error-label {
+            color: red;
+        }
